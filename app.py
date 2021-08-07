@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import preprocessor,helper
+import initial,functions
 import plotly.express as px
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -14,7 +14,7 @@ region_df = pd.read_csv('noc_regions.csv')
 st.sidebar.title('Olympic Analysis')
 a=['Summer','Winter','Combined']
 selected= st.sidebar.selectbox('Select Type',a)
-df = preprocessor.preprocess(df, region_df,selected)
+df = initial.type_select(df, region_df, selected)
 
 user_menu = st.sidebar.radio(
     'Select an Option',
@@ -23,12 +23,12 @@ user_menu = st.sidebar.radio(
 
 if user_menu == 'medal Tally':
     st.sidebar.header('Medal Tally')
-    years,country=helper.country_year_list(df)
+    years,country=functions.country_year_list(df)
 
     selected_year=st.sidebar.selectbox('select year',years)
     selected_country=st.sidebar.selectbox('select country',country)
 
-    medal_tall = helper.medal_tally(df,selected_year,selected_country)
+    medal_tall = functions.medal_tally(df, selected_year, selected_country)
     if selected_year == 'Overall' and selected_country == 'Overall':
         st.title("Overall Tally")
     if selected_year != 'Overall' and selected_country == 'Overall':
@@ -70,17 +70,17 @@ if user_menu== 'overall':
         st.header("Athletes")
         st.title(athletes)
 
-    nations_over_time = helper.data_over_time(df, 'region')
+    nations_over_time = functions.data_over_time(df, 'region')
     fig = px.line(nations_over_time, x="Edition", y="region")
     st.title("Participating Nations over the years")
     st.plotly_chart(fig)
 
-    events_over_time = helper.data_over_time(df, 'Event')
+    events_over_time = functions.data_over_time(df, 'Event')
     fig = px.line(events_over_time, x="Edition", y="Event")
     st.title("Events over the years")
     st.plotly_chart(fig)
 
-    athlete_over_time = helper.data_over_time(df, 'Name')
+    athlete_over_time = functions.data_over_time(df, 'Name')
     fig = px.line(athlete_over_time, x="Edition", y="Name")
     st.title("Athletes over the years")
     st.plotly_chart(fig)
@@ -92,7 +92,7 @@ if user_menu== 'overall':
     sport_list.insert(0, 'Overall')
 
     selected_sport = st.selectbox('Select a Sport', sport_list)
-    x = helper.most_successful(df, selected_sport)
+    x = functions.most_successful(df, selected_sport)
     st.table(x)
 
     st.title("No. of Events over time(Every Sport)")
@@ -109,7 +109,7 @@ if user_menu=='country wise':
     country_df.sort()
     country_select=st.sidebar.selectbox("Select the Country",country_df)
 
-    final_df=helper.yearwise_medal_tally(df,country_select)
+    final_df=functions.yearwise_medal_tally(df, country_select)
     fig=px.line(final_df,x='Year',y='Medal')
     st.title(country_select + "'s Medal Tally over the years")
     st.plotly_chart(fig)
@@ -130,13 +130,13 @@ if user_menu=='country wise':
     if country_select in f:
         st.info('Country selected have never won any medal')
     else:
-        pt = helper.country_event_heatmap(df, country_select)
+        pt = functions.country_event_heatmap(df, country_select)
         fig, ax = plt.subplots(figsize=(15, 15))
         ax = sns.heatmap(pt, annot=True)
         st.pyplot(fig)
 
         st.title("Top 10 athletes of " + country_select)
-        top10_df = helper.most_successful_countrywise(df, country_select)
+        top10_df = functions.most_successful_countrywise(df, country_select)
         st.table(top10_df)
 
 
@@ -230,13 +230,13 @@ if user_menu == 'Athlete wise':
 
     st.title('Height Vs Weight')
     selected_sport = st.selectbox('Select a Sport', sport_list)
-    temp_df = helper.weight_v_height(df, selected_sport)
+    temp_df = functions.weight_v_height(df, selected_sport)
     fig, ax = plt.subplots()
     ax = sns.scatterplot(temp_df['Weight'], temp_df['Height'], hue=temp_df['Medal'], style=temp_df['Sex'], s=60)
     st.pyplot(fig)
 
     st.title("Men Vs Women Participation Over the Years")
-    final = helper.men_vs_women(df)
+    final = functions.men_vs_women(df)
     fig = px.line(final, x="Year", y=["Male", "Female"])
     fig.update_layout(autosize=False, width=1000, height=600)
     st.plotly_chart(fig)
