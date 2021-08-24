@@ -321,7 +321,7 @@ if user_menu == 'Athlete wise' :
         st.title(totis)
 
     st.title(' ')
-    st.title('Performance accross the years')
+    st.title('Performance across the years')
 
     stand_df = stand_df[['Games', 'City', 'Age', 'Height', 'Weight', 'Team', 'Event', 'Medal']]
     stand_df = stand_df.fillna({'Age' : 'No Data', 'Height' : 'No Data', 'Weight' : 'No Data', 'Medal' : 'No Medal'})
