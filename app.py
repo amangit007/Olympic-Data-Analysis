@@ -390,4 +390,4 @@ if user_menu == 'Year wise' :
 
     st.table(ath_df)
 
-st.sidebar.text('* To view properly change Appearance ')
+st.sidebar.text('* To view properly change Appearance to wide mode ')
