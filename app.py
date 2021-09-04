@@ -509,7 +509,7 @@ if user_menu == 'Year wise' :
     ss = game_df['Sport'].dropna().unique().tolist()
     ss.sort()
     ss.insert(0,'Overall')
-    ssd = st.selectbox('Select Sport', ss)
+    ssd = st.selectbox('Select the Sport', ss)
 
     mvf_df=functions.malevfemale(game_df,ssd)
     mvf_df.rename(columns={'Name' : 'Athletes'}, inplace=True)
