@@ -69,7 +69,7 @@ if user_menu == 'Medal Tally' :
         st.table(medal_tall)
 
     if sub_menu=='By Team':
-        st.info('Medal tally by team maybe incorrect due to historic reasons')
+        st.info('Medal tally by team may not be correct due to historic reasons')
         years, team = functions.team_year_list(df)
         selected_year = st.sidebar.selectbox('Select year :', years)
         selected_team = st.sidebar.selectbox('Select team :', team)
@@ -367,14 +367,14 @@ if user_menu == 'Country wise' :
 if user_menu == 'Athlete wise' :
     country_select = df['region'].dropna().unique().tolist()
     country_select.sort()
-    st.sidebar.title('Select Country')
+    
     country_selecto = st.sidebar.selectbox('Select Country', country_select)
     new_df = df[df['region'] == country_selecto]
 
     name_list = new_df['Name'].unique().tolist()
     name_list.sort()
 
-    st.sidebar.title('Select Athlete')
+    
     name_select = st.sidebar.selectbox('Select Athlete', name_list)
 
     st.title(name_select)
@@ -509,7 +509,7 @@ if user_menu == 'Year wise' :
     ss = game_df['Sport'].dropna().unique().tolist()
     ss.sort()
     ss.insert(0,'Overall')
-    ssd = st.selectbox('Select the Sport', ss)
+    ssd = st.selectbox('Select Sport', ss)
 
     mvf_df=functions.malevfemale(game_df,ssd)
     mvf_df.rename(columns={'Name' : 'Athletes'}, inplace=True)
