@@ -14,6 +14,7 @@ region_df = pd.read_csv('noc_regions.csv')
 st.sidebar.title('Olympic Analysis')
 a = ['Summer', 'Winter', 'Combined']
 selected = st.sidebar.selectbox('Select Type', a)
+map_selected=selected
 df = initial.type_select(df, region_df, selected)
 
 user_menu = st.sidebar.radio(
@@ -22,25 +23,76 @@ user_menu = st.sidebar.radio(
 )
 
 if user_menu == 'Medal Tally' :
+    sub_menu=st.sidebar.radio(
+        'Select Team or Country',
+        ('By Country','By Team')
+    )
     st.image('static/medal.jpg')
-    st.sidebar.header('Medal Tally')
-    years, country = functions.country_year_list(df)
 
-    selected_year = st.sidebar.selectbox('Select year', years)
-    selected_country = st.sidebar.selectbox('Select country', country)
 
-    medal_tall = functions.medal_tally(df, selected_year, selected_country)
-    medal_tall.index = medal_tall.index + 1
-    if selected_year == 'Overall' and selected_country == 'Overall' :
-        st.title("Overall Tally")
-    if selected_year != 'Overall' and selected_country == 'Overall' :
-        st.title("Medal Tally in " + str(selected_year) + " Olympics")
-    if selected_year == 'Overall' and selected_country != 'Overall' :
-        st.title(selected_country + " overall performance")
-    if selected_year != 'Overall' and selected_country != 'Overall' :
-        st.title(selected_country + "'s performance in " + str(selected_year) + " Olympics")
-    medal_tall.index = np.arange(1, len(medal_tall) + 1)
-    st.table(medal_tall)
+    if sub_menu=='By Country':
+        years, country = functions.country_year_list(df)
+
+        selected_year = st.sidebar.selectbox('Select year', years)
+        selected_country = st.sidebar.selectbox('Select country', country)
+
+        medal_tall,flag = functions.medal_tally(df, selected_year, selected_country)
+
+        medal_tall.index = medal_tall.index + 1
+
+
+
+
+        if selected_year == 'Overall' and selected_country == 'Overall' :
+            st.title("Overall Tally")
+        if selected_year != 'Overall' and selected_country == 'Overall' :
+            st.title("Medal Tally in " + str(selected_year) + " Olympics")
+        if selected_year == 'Overall' and selected_country != 'Overall' :
+            st.title(selected_country + " overall performance")
+        if selected_year != 'Overall' and selected_country != 'Overall' :
+            st.title(selected_country + "'s performance in " + str(selected_year) + " Olympics")
+
+        if flag==0:
+            medal_tall = pd.merge(medal_tall, region_df, on='region', how='left')
+            fig = px.choropleth(medal_tall, locations="ISO",
+                            color="Total",
+                            hover_name="region",  # column to add to hover information
+                            color_continuous_scale=px.colors.sequential.Plasma)
+            fig.update_layout(autosize=False, width=1000, height=600)
+            st.plotly_chart(fig)
+
+            medal_tall=medal_tall[['region','Gold','Silver','Bronze','Total']]
+            medal_tall.rename(columns={'region' : 'Country'}, inplace=True)
+            medal_tall.drop_duplicates(subset=['Country'], inplace=True)
+        medal_tall.index = np.arange(1, len(medal_tall) + 1)
+        st.title('Medal Table')
+        st.table(medal_tall)
+
+    if sub_menu=='By Team':
+        st.info('Medal tally by team maybe incorrect due to historic reasons')
+        years, team = functions.team_year_list(df)
+        selected_year = st.sidebar.selectbox('Select year :', years)
+        selected_team = st.sidebar.selectbox('Select team :', team)
+
+        medal_tall, flag = functions.medal_tally_team(df, selected_year, selected_team)
+
+        medal_tall.index = medal_tall.index + 1
+
+        if selected_year == 'Overall' and selected_team == 'Overall' :
+            st.title("Overall Tally")
+        if selected_year != 'Overall' and selected_team == 'Overall' :
+            st.title("Medal Tally in " + str(selected_year) + " Olympics")
+        if selected_year == 'Overall' and selected_team != 'Overall' :
+            st.title(selected_team + " overall performance")
+        if selected_year != 'Overall' and selected_team != 'Overall' :
+            st.title(selected_team + "'s performance in " + str(selected_year) + " Olympics")
+
+
+        medal_tall.index = np.arange(1, len(medal_tall) + 1)
+        st.title('Medal Table')
+        st.table(medal_tall)
+
+
 
 if user_menu == 'Olympics' :
     st.image('static/olympic.jpg')
@@ -74,18 +126,39 @@ if user_menu == 'Olympics' :
         st.header("Athletes")
         st.title(athletes)
 
+
+    host_df=pd.read_csv('host.csv')
+    if map_selected=='Summer':
+        need_df=host_df[host_df['Season']=='Summer']
+    elif map_selected=='Winter':
+        need_df=host_df[host_df['Season']=='Winter']
+    else:
+        need_df=host_df.groupby('NOC').sum()['Count']
+        need_df=pd.merge(need_df,host_df,on='NOC',how='left')
+
+    mig = px.choropleth(need_df, locations="NOC",
+                        color="Count",
+                        hover_name="Country",  # column to add to hover information
+                        color_continuous_scale=px.colors.sequential.Plasma)
+    mig.update_layout(autosize=False, width=1000, height=600)
+    st.title('Host Countries')
+    st.plotly_chart(mig)
+
     nations_over_time = functions.data_over_time(df, 'region')
-    fig = px.line(nations_over_time, x="Edition", y="region")
+    nations_over_time.rename(columns={'region' : 'Nations'},inplace=True)
+    fig = px.bar(nations_over_time, x="Edition", y="Nations")
     st.title("Participating Nations over the years")
     st.plotly_chart(fig)
 
     events_over_time = functions.data_over_time(df, 'Event')
-    fig = px.line(events_over_time, x="Edition", y="Event")
+    events_over_time.rename(columns={'Event' : 'Events'}, inplace=True)
+    fig = px.line(events_over_time, x="Edition", y="Events")
     st.title("Events over the years")
     st.plotly_chart(fig)
 
     athlete_over_time = functions.data_over_time(df, 'Name')
-    fig = px.line(athlete_over_time, x="Edition", y="Name")
+    athlete_over_time.rename(columns={'Name' : 'Athletes'}, inplace=True)
+    fig = px.line(athlete_over_time, x="Edition", y="Athletes")
     st.title("Athletes over the years")
     st.plotly_chart(fig)
 
@@ -96,6 +169,7 @@ if user_menu == 'Olympics' :
 
     selected_sport = st.selectbox('Select a Sport', sport_list)
     x = functions.most_successful(df, selected_sport)
+    x.rename(columns={'region' : 'Country'}, inplace=True)
     x.index = np.arange(1, len(x) + 1)
     st.table(x)
 
@@ -194,14 +268,20 @@ if user_menu == 'Olympics' :
     sport_list13.insert(0, 'Overall')
 
     st.title("Men Vs Women Participation Over the Years")
-    final = functions.men_vs_women(df)
+    selected_spotim=st.selectbox('Select a Sport ',sport_list13)
+    final = functions.men_vs_women(df,selected_spotim)
     fig = px.line(final, x="Year", y=["Male", "Female"])
     fig.update_layout(autosize=False, width=1000, height=600)
     st.plotly_chart(fig)
 
+    sport_list14 = df['Sport'].unique().tolist()
+    sport_list14.sort()
+    sport_list14.insert(0, 'Overall')
+
+
     st.title('Height Vs Weight')
-    selected_sport12 = st.selectbox('Select a Sport : ', sport_list13)
-    temp_df = functions.weight_v_height(df, selected_sport12)
+    selected_sport15 = st.selectbox('Select a Sport : ', sport_list14)
+    temp_df = functions.weight_v_height(df, selected_sport15)
     fig, ax = plt.subplots()
     ax = sns.scatterplot(temp_df['Weight'], temp_df['Height'], hue=temp_df['Medal'], style=temp_df['Sex'], s=60)
     st.pyplot(fig)
@@ -212,10 +292,44 @@ if user_menu == 'Country wise' :
     country_df.sort()
     country_select = st.sidebar.selectbox("Select the Country", country_df)
 
+    st.title(country_select)
+    tempi_df=df[df['region']==country_select]
+    fig = px.choropleth(tempi_df, locations="ISO",
+                        hover_name="region",
+                          # column to add to hover information
+                        color_continuous_scale=px.colors.sequential.Plasma)
+    #fig.update_geos(fitbounds='locations',visible=False)
+    fig.update_layout(autosize=False, width=600, height=350)
+    st.plotly_chart(fig)
+
     final_df = functions.yearwise_medal_tally(df, country_select)
-    fig = px.line(final_df, x='Year', y='Medal')
+    fig = px.line(final_df, x='Year', y=['Gold','Silver','Bronze','Total'])
     st.title(country_select + "'s Medal Tally over the years")
     st.plotly_chart(fig)
+
+    st.title(country_select+"'s Male V Female athletes over the years")
+    menvdf=df[df["region"]==country_select]
+
+    final = functions.men_vs_women(menvdf, "Overall")
+    fig = px.line(final, x="Year", y=["Male", "Female"])
+    fig.update_layout(autosize=False, width=1000, height=600)
+    st.plotly_chart(fig)
+
+    countrous=df[df['region']==country_select]
+    MenOverTime=countrous[countrous['Sex']=="M"]
+    plt.figure(figsize=(20, 10))
+    fig, ax = plt.subplots()
+    ax=sns.pointplot('Year', 'Height', data=MenOverTime, palette='Set2')
+    st.title('Variation of Height for Male Athletes over time')
+    st.pyplot(fig)
+
+    femaleOverTime = countrous[countrous['Sex'] == "F"]
+    plt.figure(figsize=(20, 10))
+    fig, axp = plt.subplots()
+    axp = sns.pointplot('Year', 'Height', data=femaleOverTime, palette='Set2')
+    st.title('Variation of Height for Female Athletes over time')
+    st.pyplot(fig)
+
 
     f = ['Albania', 'American Samoa', 'Andorra', 'Angola', 'Antigua', 'Aruba', 'Bangladesh',
          'Belize', 'Benin', 'Bhutan', 'Boliva', 'Bosnia and Herzegovina', 'Brunei', 'Burkina Faso',
@@ -233,7 +347,7 @@ if user_menu == 'Country wise' :
 
     pt = functions.country_event_heatmap(df, country_select, )
     fig, ax = plt.subplots(figsize=(15, 15))
-    ax = sns.heatmap(pt, annot=True)
+    ax = sns.heatmap(pt, annot=True,cmap='rainbow')
     st.pyplot(fig)
 
     st.title(country_select + "'s success in Olympics(Medals)")
@@ -321,8 +435,7 @@ if user_menu == 'Athlete wise' :
         st.title(totis)
 
     st.title(' ')
-    st.title('Performance across the years')
-
+    st.title('Performance accross the years')
     stand_df = stand_df[['Games', 'City', 'Age', 'Height', 'Weight', 'Team', 'Event', 'Medal']]
     stand_df = stand_df.fillna({'Age' : 'No Data', 'Height' : 'No Data', 'Weight' : 'No Data', 'Medal' : 'No Medal'})
     stand_df.index = np.arange(1, len(stand_df) + 1)
@@ -366,6 +479,43 @@ if user_menu == 'Year wise' :
         st.header('Athletes')
         st.title(athletes)
 
+
+
+    medal_tall = functions.medal_tally(game_df, "Overall", "Overall")
+    medal_tall=medal_tall[0].head(10).sort_values(['Total'], ascending=False)
+
+    st.title('Atheletes by Country')
+    ath_df = game_df.drop_duplicates(subset=['Name'])
+    ath_df = ath_df.groupby('ISO').count()['Name'].reset_index().sort_values(['Name'], ascending=False)
+    ath_df = ath_df.rename(columns={'region' : 'Country', 'Name' : 'Athletes'})
+    ath_df=pd.merge(ath_df,region_df,on='ISO', how='left')
+    ath_df.index = np.arange(1, len(ath_df) + 1)
+
+    fig = px.choropleth(ath_df, locations="ISO",
+                        color="Athletes",
+                        hover_name="region",  # column to add to hover information
+                        color_continuous_scale=px.colors.sequential.Plasma)
+    fig.update_layout(autosize=False, width=1000, height=600)
+    st.plotly_chart(fig)
+
+    st.title('Top 10 Countries')
+    medal_tall.rename(columns={'region' : 'Country'}, inplace=True)
+    fig = px.bar(medal_tall, x="Country", y=["Gold", "Silver", "Bronze"])
+    fig.update_layout(autosize=False, width=1000, height=600)
+    st.plotly_chart(fig)
+
+
+    st.title('Male V Female Participation')
+    ss = game_df['Sport'].dropna().unique().tolist()
+    ss.sort()
+    ss.insert(0,'Overall')
+    ssd = st.selectbox('Select the Sport', ss)
+
+    mvf_df=functions.malevfemale(game_df,ssd)
+    mvf_df.rename(columns={'Name' : 'Athletes'}, inplace=True)
+    fig=px.pie(mvf_df,values='Athletes', names='Sex')
+    st.plotly_chart(fig)
+
     st.title('Successfull Athletes')
     sport_select = game_df['Sport'].dropna().unique().tolist()
     sport_select.sort()
@@ -382,12 +532,11 @@ if user_menu == 'Year wise' :
     finished_df.index = np.arange(1, len(finished_df) + 1)
     st.table(finished_df)
 
-    st.title('Atheletes by country')
-    ath_df = game_df.drop_duplicates(subset=['Name'])
-    ath_df = ath_df.groupby('Team').count()['Name'].reset_index().sort_values(['Name'], ascending=False)
-    ath_df = ath_df.rename(columns={'region' : 'Country', 'Name' : 'Athletes'})
-    ath_df.index = np.arange(1, len(ath_df) + 1)
 
-    st.table(ath_df)
 
-st.sidebar.text('* To view properly change Appearance to wide mode ')
+
+
+
+    #st.table(ath_df)
+
+st.sidebar.text('* To view properly change Appearance to wide')

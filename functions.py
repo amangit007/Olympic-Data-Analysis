@@ -4,14 +4,18 @@ import pandas as pd
 def medal_tally(df,year,country):
     medal_df = df.drop_duplicates(subset=['Team', 'NOC', 'Games', 'Year', 'City', 'Sport', 'Event', 'Medal'])
     flame=0
+    flag=0
     if (year=='Overall') and (country=='Overall'):
         x=medal_df
     if (year=='Overall') and (country!='Overall'):
         flame=1
+        flag=1
         x=medal_df[medal_df['region']==country]
+
     if (year != 'Overall') and (country == 'Overall') :
         x = medal_df[medal_df['Year'] == year]
     if (year != 'Overall') and (country != 'Overall') :
+        flag=1
         x  = medal_df[(medal_df['Year'] == year) & (medal_df['region'] == country)]
 
     if flame==1:
@@ -29,7 +33,45 @@ def medal_tally(df,year,country):
 
 
 
-    return medal_df
+    return medal_df,flag
+
+
+
+
+
+def medal_tally_team(df,year,country):
+    medal_df = df.drop_duplicates(subset=['Team', 'NOC', 'Games', 'Year', 'City', 'Sport', 'Event', 'Medal'])
+    flame=0
+    flag=0
+    if (year=='Overall') and (country=='Overall'):
+        x=medal_df
+    if (year=='Overall') and (country!='Overall'):
+        flame=1
+        flag=1
+        x=medal_df[medal_df['Team']==country]
+
+    if (year != 'Overall') and (country == 'Overall') :
+        x = medal_df[medal_df['Year'] == year]
+    if (year != 'Overall') and (country != 'Overall') :
+        flag=1
+        x  = medal_df[(medal_df['Year'] == year) & (medal_df['Team'] == country)]
+
+    if flame==1:
+        medal_df=x.groupby('Year').sum()[['Gold', 'Silver', 'Bronze']].sort_values('Year').reset_index()
+    else:
+        medal_df = x.groupby('Team').sum()[['Gold', 'Silver', 'Bronze']].sort_values(['Gold', 'Silver', 'Bronze'], ascending=False).reset_index()
+
+    medal_df['Total']=medal_df['Gold']+ medal_df['Silver'] +medal_df['Bronze']
+
+    medal_df['Gold'] = medal_df['Gold'].astype('int')
+    medal_df['Silver'] = medal_df['Silver'].astype('int')
+    medal_df['Bronze'] = medal_df['Bronze'].astype('int')
+    medal_df['Total'] = medal_df['Total'].astype('int')
+
+
+
+
+    return medal_df,flag
 
 def country_year_list(df):
     years = df['Year'].unique().tolist()
@@ -43,6 +85,20 @@ def country_year_list(df):
     country.insert(0, 'Overall')
 
     return years,country
+
+def team_year_list(df):
+    years = df['Year'].unique().tolist()
+    years.sort()
+    years.insert(0, 'Overall')
+
+    new_df = df
+    new_df['Team'] = df['Team'].astype('str')
+    country = np.unique(new_df['Team'].values).tolist()
+    country.sort()
+    country.insert(0, 'Overall')
+
+    return years, country
+
 
 def data_over_time(df,col):
 
@@ -76,8 +132,8 @@ def yearwise_medal_tally(df,country):
     temp_df.drop_duplicates(subset=['Team', 'NOC', 'Games', 'Year', 'City', 'Sport', 'Event', 'Medal'], inplace=True)
 
     new_df = temp_df[temp_df['region'] == country]
-    final_df = new_df.groupby('Year').count()['Medal'].reset_index()
-
+    final_df = new_df.groupby('Year').sum()[['Silver','Gold','Bronze']].reset_index()
+    final_df['Total'] = final_df['Gold'] + final_df['Silver'] + final_df['Bronze']
     return final_df
 
 def country_event_heatmap(df,country):
@@ -128,9 +184,12 @@ def weight_v_height(df,sport):
     else:
         return athlete_df
 
-def men_vs_women(df):
-    athlete_df = df.drop_duplicates(subset=['Name', 'region'])
-
+def men_vs_women(df,sport):
+    athlete_df = df.drop_duplicates(subset=['Name', 'Year'])
+    if sport=="Overall":
+        athlete_df=athlete_df
+    else:
+        athlete_df=athlete_df[athlete_df['Sport']==sport]
     men = athlete_df[athlete_df['Sex'] == 'M'].groupby('Year').count()['Name'].reset_index()
     women = athlete_df[athlete_df['Sex'] == 'F'].groupby('Year').count()['Name'].reset_index()
 
@@ -170,6 +229,15 @@ def success(df,sport,event):
 
     return x
 
+
+def malevfemale(df,sport):
+    if sport=='Overall':
+        new_df=df
+    else:
+        new_df=df[df['Sport']==sport]
+
+    new_df=new_df.groupby('Sex').count()['Name'].reset_index()
+    return new_df
 
 
 

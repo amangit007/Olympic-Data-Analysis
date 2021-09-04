@@ -1,0 +1,32 @@
+NOC,Country,Season,Count
+USA,USA,Summer,4
+FRA,France,Summer,2
+ITA,Italy,Summer,1
+JPN,Japan,Summer,1
+GBR,Great Britain,Summer,3
+DEU,Germany,Summer,2
+CAN,Canada,Summer,1
+AUS,Australia,Summer,2
+KOR,South Korea,Summer,1
+CHN,China,Summer,1
+GRC,Greece,Summer,2
+RUS,Russia,Summer,1
+SWE,Sweden,Summer,1
+BEL,Belgium,Summer,1
+NLD,Netherlands,Summer,1
+FIN,Finland,Summer,1
+MEX,Mexico,Summer,1
+ESP,Spain,Summer,1
+BRA,Brazil,Summer,1
+USA,USA,Winter,4
+FRA,France,Winter,3
+ITA,Italy,Winter,2
+JPN,Japan,Winter,2
+CHE,Switzerland,Winter,2
+DEU,Germany,Winter,1
+NOR,Norway,Winter,2
+AUT,Austria,Winter,2
+CAN,Canada,Winter,2
+KOR,South Korea,Winter,1
+RUS,Russia,Winter,1
+SRB,Serbia,Winter,1
