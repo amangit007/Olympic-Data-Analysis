@@ -287,7 +287,7 @@ if user_menu == 'Olympics' :
     st.pyplot(fig)
 
 if user_menu == 'Country wise' :
-    st.sidebar.title("Country wise Analysis")
+    
     country_df = df['region'].dropna().unique().tolist()
     country_df.sort()
     country_select = st.sidebar.selectbox("Select the Country", country_df)
@@ -367,7 +367,7 @@ if user_menu == 'Country wise' :
 if user_menu == 'Athlete wise' :
     country_select = df['region'].dropna().unique().tolist()
     country_select.sort()
-    st.sidebar.title('Select country')
+    st.sidebar.title('Select Country')
     country_selecto = st.sidebar.selectbox('Select Country', country_select)
     new_df = df[df['region'] == country_selecto]
 
