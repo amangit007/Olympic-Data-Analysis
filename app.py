@@ -18,7 +18,7 @@ map_selected=selected
 df = initial.type_select(df, region_df, selected)
 
 user_menu = st.sidebar.radio(
-    'Select an Option',
+    'Select an option',
     ('Olympics', 'Medal Tally', 'Year wise', 'Country wise', 'Athlete wise')
 )
 
@@ -54,13 +54,15 @@ if user_menu == 'Medal Tally' :
 
         if flag==0:
             medal_tall = pd.merge(medal_tall, region_df, on='region', how='left')
+            medal_tall.rename(columns={'Total' : 'Total Medals'}, inplace=True)
             fig = px.choropleth(medal_tall, locations="ISO",
-                            color="Total",
+                            color="Total Medals",
                             hover_name="region",  # column to add to hover information
                             color_continuous_scale=px.colors.sequential.Plasma)
             fig.update_layout(autosize=False, width=1000, height=600)
             st.plotly_chart(fig)
-
+            
+            medal_tall.rename(columns={'Total Medals' : 'Total'}, inplace=True)
             medal_tall=medal_tall[['region','Gold','Silver','Bronze','Total']]
             medal_tall.rename(columns={'region' : 'Country'}, inplace=True)
             medal_tall.drop_duplicates(subset=['Country'], inplace=True)
@@ -136,8 +138,9 @@ if user_menu == 'Olympics' :
         need_df=host_df.groupby('NOC').sum()['Count']
         need_df=pd.merge(need_df,host_df,on='NOC',how='left')
 
+    need_df.rename(columns={'Count' : 'Number of times hosted'}, inplace=True)
     mig = px.choropleth(need_df, locations="NOC",
-                        color="Count",
+                        color="Number of times hosted",
                         hover_name="Country",  # column to add to hover information
                         color_continuous_scale=px.colors.sequential.Plasma)
     mig.update_layout(autosize=False, width=1000, height=600)
@@ -147,7 +150,7 @@ if user_menu == 'Olympics' :
     nations_over_time = functions.data_over_time(df, 'region')
     nations_over_time.rename(columns={'region' : 'Nations'},inplace=True)
     fig = px.bar(nations_over_time, x="Edition", y="Nations")
-    st.title("Participating Nations over the years")
+    st.title("Participating nations over the years")
     st.plotly_chart(fig)
 
     events_over_time = functions.data_over_time(df, 'Event')
@@ -290,7 +293,7 @@ if user_menu == 'Country wise' :
     
     country_df = df['region'].dropna().unique().tolist()
     country_df.sort()
-    country_select = st.sidebar.selectbox("Select the Country", country_df)
+    country_select = st.sidebar.selectbox("Select a Country", country_df)
 
     st.title(country_select)
     tempi_df=df[df['region']==country_select]
@@ -509,7 +512,7 @@ if user_menu == 'Year wise' :
     ss = game_df['Sport'].dropna().unique().tolist()
     ss.sort()
     ss.insert(0,'Overall')
-    ssd = st.selectbox('Select the Sport', ss)
+    ssd = st.selectbox('Select a Sport', ss)
 
     mvf_df=functions.malevfemale(game_df,ssd)
     mvf_df.rename(columns={'Name' : 'Athletes'}, inplace=True)
@@ -529,6 +532,7 @@ if user_menu == 'Year wise' :
     evenselecto = st.selectbox('Select Event', event_df)
 
     finished_df = functions.success(game_df, selected, evenselecto)
+    finished_df.rename(columns={'region' : 'Country'}, inplace=True)
     finished_df.index = np.arange(1, len(finished_df) + 1)
     st.table(finished_df)
 
