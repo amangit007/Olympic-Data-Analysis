@@ -487,7 +487,7 @@ if user_menu == 'Year wise' :
     medal_tall = functions.medal_tally(game_df, "Overall", "Overall")
     medal_tall=medal_tall[0].head(10).sort_values(['Total'], ascending=False)
 
-    st.title('Atheletes by Country')
+    st.title('Athletes by Country')
     ath_df = game_df.drop_duplicates(subset=['Name'])
     ath_df = ath_df.groupby('ISO').count()['Name'].reset_index().sort_values(['Name'], ascending=False)
     ath_df = ath_df.rename(columns={'region' : 'Country', 'Name' : 'Athletes'})
