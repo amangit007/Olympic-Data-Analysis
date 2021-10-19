@@ -224,7 +224,7 @@ def success(df,sport,event):
     x = pd.merge(x, samp_df, on='Name', how='left')
 
     x['Total'] = x['Gold'] + x['Silver'] + x['Bronze']
-    x = x[['Name', 'Sport', 'Gold', 'Silver', 'Bronze', 'Total']].drop_duplicates(['Name']).sort_values(
+    x = x[['Name', 'region','Sport', 'Gold', 'Silver', 'Bronze', 'Total']].drop_duplicates(['Name']).sort_values(
         ['Gold', 'Silver', 'Bronze'], ascending=False).head(10)
 
     return x
