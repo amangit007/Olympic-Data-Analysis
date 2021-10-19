@@ -11,7 +11,7 @@ from PIL import Image
 df = pd.read_csv('athlete_events.csv')
 region_df = pd.read_csv('noc_regions.csv')
 
-st.sidebar.title('Olympic Analysis')
+st.sidebar.title('Olympic Data Analysis')
 a = ['Summer', 'Winter', 'Combined']
 selected = st.sidebar.selectbox('Select Type', a)
 map_selected=selected
